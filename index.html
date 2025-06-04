@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoVision | Multi-Plate Recognition</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #1b933b;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: var(--dark-color);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
+        }
+        
+        .upload-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 2px dashed #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-container:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 0.5rem 1.5rem;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        
+        .btn-process {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            width: 200px;
+            color: white;
+        }
+        
+        .btn-process:hover {
+            background-color: #0e7d2b;
+            border-color: #0e7d2b;
+        }
+        .btn-click{
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+        }
+        .btn-secondary-action {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            width: 200px;
+        }
+        
+        .btn-secondary-action:hover {
+            background-color: #1a252f;
+            border-color: #1a252f;
+        }
+        
+        .file-info {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .preview-container {
+            margin-top: 2rem;
+            display: none;
+        }
+        
+        .upload-list {
+            margin-top: 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .upload-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+        
+        .upload-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .upload-thumbnail {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-right: 1rem;
+        }
+        
+        .upload-details {
+            flex-grow: 1;
+        }
+        
+        .upload-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .upload-size {
+            font-size: 0.8rem;
+            color: #777;
+        }
+        
+        .upload-status {
+            margin-left: 1rem;
+            font-size: 0.9rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .results-container {
+            margin-top: 2rem;
+            display: none;
+        }
+        
+        .plate-result {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .plate-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .plate-image {
+            width: 120px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-right: 1.5rem;
+        }
+        
+        .plate-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+        
+        footer {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: 3rem;
+        }
+        
+        .warning-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 4px;
+        }
+        
+        .progress-container {
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .no-files {
+            text-align: center;
+            padding: 2rem;
+            color: #777;
+            border: 1px dashed #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        
+        .file-count {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-car-alt me-2"></i>AutoVision
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="navbar-text me-3 d-none d-lg-block" style="color: var(--secondary-color); font-weight: 500;">
+                    Designed by Apochi Samuel
+                </span>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Home</a>
+                    </li>
+                </ul>
+                <span class="navbar-text d-lg-none ms-3" style="color: var(--secondary-color);">
+                    Designed by Apochi Samuel
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <h1 class="text-center mb-4">Multi-Plate Recognition</h1>
+                <p class="text-center text-muted mb-5">Upload multiple vehicle images to automatically detect and read license plates in batch mode.</p>
+                
+                <!-- Upload Section -->
+                <div class="upload-container text-center" id="uploadContainer">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <h4>Upload Vehicle Images</h4>
+                    <p class="text-muted">Drag & drop your images here or click to browse</p>
+                    <p class="file-info">Supports JPG, PNG, WEBP (Max 20-50 files)</p>
+                    <input type="file" id="fileInput" accept="image/*" class="d-none" multiple>
+                    <button class="btn btn-primary mt-3" id="browseBtn">
+                        <i class="fas fa-folder-open me-2"></i>Select Files
+                    </button>
+                    
+                    <div class="warning-box text-start">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Image Quality Guidelines:</h6>
+                        <ul>
+                            <li><strong>Best:</strong> Original photos taken directly (JPEG/PNG)</li>
+                            <li><strong>Avoid:</strong> Screenshots, heavily compressed images</li>
+                            <li><strong>Rejected:</strong> Blurry pics or images smaller than 640x480px</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Preview Section -->
+                <div class="preview-container" id="previewContainer">
+                    <h5 class="mb-3">Selected Files <span id="fileCount" class="file-count">0</span></h5>
+                    
+                    <div class="upload-list" id="uploadList">
+                        <div class="no-files" id="noFilesMessage">
+                            <i class="fas fa-images fa-2x mb-3"></i>
+                            <p>No files selected</p>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-container" id="progressContainer">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Processing files...</span>
+                            <span id="progressText">0%</span>
+                        </div>
+                        <div class="progress">
+                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-process" id="processBtn">
+                            <i class="fas fa-search me-2"></i>Read All Plates
+                        </button>
+                        <button class="btn btn-click btn-secondary" id="addMoreBtn">
+                            <i class="fas fa-plus me-2"></i>Add More
+                        </button>
+                        <button class="btn btn-click btn-danger" id="cancelBtn">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Results Section -->
+                <div class="results-container" id="resultsContainer">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4>Detection Results</h4>
+                        <button class="btn btn-outline-primary" id="exportAllBtn">
+                            <i class="fas fa-file-export me-2"></i>Export All
+                        </button>
+                    </div>
+                    
+                    <div id="resultsList">
+                        <!-- Results will be inserted here -->
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="btn btn-primary" id="newUploadBtn">
+                            <i class="fas fa-upload me-2"></i>New Batch Upload
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Apochi Samuel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('fileInput');
+            const browseBtn = document.getElementById('browseBtn');
+            const uploadContainer = document.getElementById('uploadContainer');
+            const previewContainer = document.getElementById('previewContainer');
+            const uploadList = document.getElementById('uploadList');
+            const noFilesMessage = document.getElementById('noFilesMessage');
+            const processBtn = document.getElementById('processBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const addMoreBtn = document.getElementById('addMoreBtn');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const newUploadBtn = document.getElementById('newUploadBtn');
+            const fileCount = document.getElementById('fileCount');
+            const resultsList = document.getElementById('resultsList');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const exportAllBtn = document.getElementById('exportAllBtn');
+            
+            let uploadedFiles = [];
+            const MAX_FILES = 51;
+            const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+            
+            // Handle drag and drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadContainer.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadContainer.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadContainer.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                uploadContainer.style.borderColor = 'var(--primary-color)';
+                uploadContainer.style.backgroundColor = 'rgba(52, 152, 219, 0.1)';
+            }
+            
+            function unhighlight() {
+                uploadContainer.style.borderColor = '#ddd';
+                uploadContainer.style.backgroundColor = 'white';
+            }
+            
+            // Handle dropped files
+            uploadContainer.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+            
+            // Browse files button
+            browseBtn.addEventListener('click', () => {
+                fileInput.value = '';
+                fileInput.click();
+            });
+            
+            // Add more files button
+            addMoreBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // File input change
+            fileInput.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+            
+            // Process files
+            function handleFiles(files) {
+                if (files.length === 0) return;
+                
+                // Check total file count won't exceed maximum
+                if (uploadedFiles.length + files.length > MAX_FILES) {
+                    alert(`You can upload maximum ${MAX_FILES} files at once. You already have ${uploadedFiles.length} files selected.`);
+                    return;
+                }
+                
+                let validFilesAdded = 0;
+                
+                Array.from(files).forEach(file => {
+                    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                    
+                    if (!validTypes.includes(file.type)) {
+                        alert(`Skipped ${file.name}: Only JPG, PNG, or WEBP files are allowed`);
+                        return;
+                    }
+                    
+                    if (file.size > MAX_SIZE) {
+                        alert(`Skipped ${file.name}: File size exceeds 10MB limit`);
+                        return;
+                    }
+                    
+                    // Add to uploaded files array
+                    uploadedFiles.push({
+                        file: file,
+                        id: Date.now() + Math.random().toString(36).substr(2, 9),
+                        status: 'pending'
+                    });
+                    
+                    validFilesAdded++;
+                });
+                
+                if (validFilesAdded > 0) {
+                    updateFileList();
+                    uploadContainer.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                }
+            }
+            
+            // Update the file list display
+            function updateFileList() {
+                fileCount.textContent = uploadedFiles.length;
+                
+                if (uploadedFiles.length === 0) {
+                    noFilesMessage.style.display = 'block';
+                    return;
+                } else {
+                    noFilesMessage.style.display = 'none';
+                }
+                
+                uploadList.innerHTML = '';
+                
+                uploadedFiles.forEach(fileObj => {
+                    const file = fileObj.file;
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'upload-item';
+                        fileItem.dataset.id = fileObj.id;
+                        
+                        fileItem.innerHTML = `
+                            <img src="${e.target.result}" class="upload-thumbnail" alt="${file.name}">
+                            <div class="upload-details">
+                                <div class="upload-name">${file.name}</div>
+                                <div class="upload-size">${formatFileSize(file.size)}</div>
+                            </div>
+                            <div class="upload-status status-pending">Pending</div>
+                            <button class="btn btn-sm btn-outline-danger remove-btn" data-id="${fileObj.id}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        `;
+                        
+                        uploadList.appendChild(fileItem);
+                        
+                        // Add event listener to remove button
+                        fileItem.querySelector('.remove-btn').addEventListener('click', function() {
+                            removeFile(fileObj.id);
+                        });
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+            }
+            
+            // Format file size
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            // Remove a file
+            function removeFile(id) {
+                uploadedFiles = uploadedFiles.filter(file => file.id !== id);
+                updateFileList();
+                
+                if (uploadedFiles.length === 0) {
+                    noFilesMessage.style.display = 'block';
+                }
+            }
+            
+            // Process button (simulate plate recognition)
+            processBtn.addEventListener('click', function() {
+                if (uploadedFiles.length === 0) {
+                    alert('Please upload at least one image file');
+                    return;
+                }
+                
+                // Show processing UI
+                processBtn.disabled = true;
+                processBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+                progressContainer.style.display = 'block';
+                
+                // Simulate processing with progress
+                let processed = 0;
+                const totalFiles = uploadedFiles.length;
+                const progressInterval = setInterval(() => {
+                    processed++;
+                    const percent = Math.round((processed / totalFiles) * 100);
+                    progressBar.style.width = percent + '%';
+                    progressText.textContent = percent + '%';
+                    
+                    // Update file status in list
+                    if (processed <= totalFiles) {
+                        const fileId = uploadedFiles[processed - 1].id;
+                        const fileItem = document.querySelector(`.upload-item[data-id="${fileId}"]`);
+                        if (fileItem) {
+                            fileItem.querySelector('.upload-status').className = 'upload-status status-success';
+                            fileItem.querySelector('.upload-status').textContent = 'Processed';
+                        }
+                    }
+                    
+                    // When complete
+                    if (processed === totalFiles) {
+                        clearInterval(progressInterval);
+                        showResults();
+                    }
+                }, 500);
+            });
+            
+            // Show results
+            function showResults() {
+                resultsList.innerHTML = '';
+                
+                uploadedFiles.forEach((fileObj, index) => {
+                    // Generate a random plate number for demo
+                    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                    const numbers = '0123456789';
+                    let randomPlate = '';
+                    
+                    // Add 3 random letters
+                    for (let i = 0; i < 3; i++) {
+                        randomPlate += letters.charAt(Math.floor(Math.random() * letters.length));
+                    }
+                    
+                    // Add space
+                    randomPlate += ' ';
+                    
+                    // Add 4 random numbers
+                    for (let i = 0; i < 4; i++) {
+                        randomPlate += numbers.charAt(Math.floor(Math.random() * numbers.length));
+                    }    
+                    // Create result card
+                    const resultCard = document.createElement('div');
+                    resultCard.className = 'plate-result';
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        resultCard.innerHTML = `
+                            <div class="plate-header">
+                                <img src="${e.target.result}" class="plate-image" alt="${fileObj.file.name}">
+                                <div>
+                                    <h5>${fileObj.file.name}</h5>
+                                    <div class="plate-number">${randomPlate}</div>
+                                </div>
+                            </div>
+                        `;
+                    };
+                    reader.readAsDataURL(fileObj.file);
+                    
+                    resultsList.appendChild(resultCard);
+                });
+                
+                previewContainer.style.display = 'none';
+                resultsContainer.style.display = 'block';
+            }
+            
+            // Cancel button
+            cancelBtn.addEventListener('click', function() {
+                fileInput.value = '';
+                uploadedFiles = [];
+                updateFileList();
+                previewContainer.style.display = 'none';
+                uploadContainer.style.display = 'block';
+                progressContainer.style.display = 'none';
+                processBtn.innerHTML = '<i class="fas fa-search me-2"></i>Read All Plates';
+                processBtn.disabled = false;
+            });
+            
+            // New upload button
+            newUploadBtn.addEventListener('click', function() {
+                fileInput.value = '';
+                uploadedFiles = [];
+                updateFileList();
+                resultsContainer.style.display = 'none';
+                uploadContainer.style.display = 'block';
+                processBtn.innerHTML = '<i class="fas fa-search me-2"></i>Read All Plates';
+                processBtn.disabled = false;
+            });
+            
+            // Export all button
+            exportAllBtn.addEventListener('click', function() {
+                alert('Exporting all results as CSV file');
+                // In a real app, this would generate and download a CSV file
+            });
+        });
+    </script>
+</body>
+</html>
